@@ -699,12 +699,84 @@
 
     .confirm-row {
       display: flex;
-      gap: 8px;
-      margin-top: 10px;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 14px;
     }
 
-    .confirm-row button {
-      flex: 1;
+    .claim-icon {
+      width: 94px;
+      height: 94px;
+      border: 0;
+      border-radius: 28px;
+      display: grid;
+      place-items: center;
+      font-size: 3.8rem;
+      font-weight: 950;
+      color: white;
+      box-shadow: 0 9px 0 rgba(0,0,0,0.25), 0 16px 28px rgba(0,0,0,0.28);
+      transform: translateY(0);
+    }
+
+    .claim-icon:active {
+      transform: translateY(5px);
+      box-shadow: 0 4px 0 rgba(0,0,0,0.25), 0 10px 20px rgba(0,0,0,0.24);
+    }
+
+    .claim-yes {
+      background: linear-gradient(180deg, #92ff9d, #20bf55);
+      text-shadow: 0 3px 0 rgba(0,0,0,0.18);
+    }
+
+    .claim-no {
+      background: linear-gradient(180deg, #ff9a9a, #e03636);
+      text-shadow: 0 3px 0 rgba(0,0,0,0.18);
+    }
+
+    .celebration-message {
+      position: fixed;
+      left: 50%;
+      top: 42%;
+      transform: translate(-50%, -50%) scale(0.8);
+      z-index: 170;
+      width: min(340px, calc(100vw - 44px));
+      border-radius: 28px;
+      padding: 20px;
+      text-align: center;
+      background: linear-gradient(180deg, #fff8bd, #ffd95a);
+      color: #17325f;
+      font-weight: 950;
+      font-size: 1.75rem;
+      box-shadow: 0 22px 70px rgba(0,0,0,0.42);
+      animation: celebrationPop 1.35s ease forwards;
+      pointer-events: none;
+    }
+
+    @keyframes celebrationPop {
+      0% { transform: translate(-50%, -50%) scale(0.45) rotate(-4deg); opacity: 0; }
+      20% { transform: translate(-50%, -50%) scale(1.08) rotate(2deg); opacity: 1; }
+      55% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(0.92) rotate(0deg); opacity: 0; }
+    }
+
+    .firework {
+      position: fixed;
+      left: var(--x);
+      top: var(--y);
+      z-index: 165;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--c);
+      box-shadow: 0 0 16px var(--c);
+      pointer-events: none;
+      animation: firework 0.95s ease-out forwards;
+    }
+
+    @keyframes firework {
+      0% { transform: translate(0, 0) scale(0.4); opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0.08); opacity: 0; }
     }
 
     details {
@@ -846,14 +918,14 @@
   <div class="ticket-overlay" id="ticketOverlay" role="dialog" aria-modal="true" aria-label="Claim prize ticket">
     <div class="ticket-card" id="ticketCard">
       <p class="ticket-title">Prize Ticket</p>
-      <p class="ticket-subtitle">Are you sure this prize has been claimed?</p>
+      <p class="ticket-subtitle">Claim this prize ticket?</p>
       <div class="claim-paper">
         <span class="tier" id="claimTier">Prize</span>
         <div id="claimText">Prize text</div>
       </div>
-      <div class="confirm-row">
-        <button class="soft-button" id="cancelClaimButton">No</button>
-        <button class="soft-button danger" id="confirmClaimButton">Yes, claim it</button>
+      <div class="confirm-row" aria-label="Claim prize options">
+        <button class="claim-icon claim-no" id="cancelClaimButton" aria-label="Do not claim this prize">✕</button>
+        <button class="claim-icon claim-yes" id="confirmClaimButton" aria-label="Claim this prize">✓</button>
       </div>
     </div>
   </div>
@@ -1319,6 +1391,7 @@
 
     function confirmClaimTicket() {
       if (!ticketPendingClaim) return;
+      showPrizeCelebration(ticketPendingClaim);
       ticketCard.classList.add("claiming");
       setTimeout(() => {
         state.tickets = state.tickets.filter(t => t.id !== ticketPendingClaim.id);
@@ -1326,7 +1399,41 @@
         ticketOverlay.classList.remove("show");
         ticketCard.classList.remove("claiming");
         render();
-      }, 780);
+      }, 900);
+    }
+
+    function showPrizeCelebration(ticket) {
+      const colours = ["#ffd95a", "#92ff9d", "#6ec7ff", "#ff8ad8", "#ff6b6b", "#fff2a8"];
+      const bursts = [
+        { x: 50, y: 32 },
+        { x: 26, y: 44 },
+        { x: 74, y: 44 },
+        { x: 40, y: 62 },
+        { x: 62, y: 62 }
+      ];
+
+      bursts.forEach((burst, burstIndex) => {
+        for (let i = 0; i < 18; i++) {
+          const spark = document.createElement("div");
+          spark.className = "firework";
+          spark.style.setProperty("--x", burst.x + "vw");
+          spark.style.setProperty("--y", burst.y + "vh");
+          spark.style.setProperty("--c", colours[(i + burstIndex) % colours.length]);
+          const angle = (Math.PI * 2 * i) / 18;
+          const distance = 48 + Math.random() * 78;
+          spark.style.setProperty("--dx", Math.cos(angle) * distance + "px");
+          spark.style.setProperty("--dy", Math.sin(angle) * distance + "px");
+          spark.style.animationDelay = (burstIndex * 0.12) + "s";
+          document.body.appendChild(spark);
+          setTimeout(() => spark.remove(), 1400);
+        }
+      });
+
+      const banner = document.createElement("div");
+      banner.className = "celebration-message";
+      banner.innerHTML = `Prize claimed!<br><span style="font-size:1.05rem">${escapeHtml(ticket.prize)}</span>`;
+      document.body.appendChild(banner);
+      setTimeout(() => banner.remove(), 1500);
     }
 
     function undoLastLaunch() {
