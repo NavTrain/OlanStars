@@ -7,7 +7,7 @@
   <title>Olan's Star Rocket</title>
   <style>
     :root {
-      --target-stars: 10;
+      --target-stars: 5;
       --bg1: #06132f;
       --bg2: #102b63;
       --panel: rgba(255, 255, 255, 0.12);
@@ -111,15 +111,48 @@
 
     .moon {
       position: absolute;
-      top: 14px;
-      right: 18px;
-      width: 40px;
-      height: 40px;
+      top: 12px;
+      right: 16px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #fff7c9, #ffd56a);
+      background: #ffd56a;
       box-shadow: 0 0 22px rgba(255, 230, 120, 0.65);
-      opacity: 0.9;
+      opacity: 0.95;
+      overflow: hidden;
     }
+
+    .moon::after {
+      content: "";
+      position: absolute;
+      top: -2px;
+      width: 46px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(16, 43, 99, 0.92);
+      transform: translateX(var(--phase-x)) scaleX(var(--phase-scale));
+      opacity: var(--phase-opacity);
+    }
+
+    .moon.phase-new {
+      background: rgba(255, 213, 106, 0.18);
+      box-shadow: 0 0 18px rgba(255, 230, 120, 0.25);
+    }
+
+    .moon.phase-new::after {
+      opacity: 0;
+    }
+
+    .moon.phase-full::after {
+      opacity: 0;
+    }
+
+    .moon.phase-wax-crescent { --phase-x: -26px; --phase-scale: 1.05; --phase-opacity: 0.94; }
+    .moon.phase-first-quarter { --phase-x: -22px; --phase-scale: 1.15; --phase-opacity: 0.92; }
+    .moon.phase-wax-gibbous { --phase-x: -14px; --phase-scale: 1.25; --phase-opacity: 0.86; }
+    .moon.phase-wan-gibbous { --phase-x: 14px; --phase-scale: 1.25; --phase-opacity: 0.86; }
+    .moon.phase-last-quarter { --phase-x: 22px; --phase-scale: 1.15; --phase-opacity: 0.92; }
+    .moon.phase-wan-crescent { --phase-x: 26px; --phase-scale: 1.05; --phase-opacity: 0.94; }
 
     .progress-text {
       font-weight: 850;
@@ -145,7 +178,7 @@
       border-radius: 50%;
       display: grid;
       place-items: center;
-      font-size: clamp(1.35rem, 9vw, 2.05rem);
+      font-size: clamp(1.5rem, 10vw, 2.4rem);
       background: rgba(0,0,0,0.12);
       border: 1px dashed rgba(255,255,255,0.18);
       transform: rotate(var(--r)) translate(var(--tx), var(--ty));
@@ -244,20 +277,23 @@
       height: 118px;
       transform: translateX(-50%);
       transform-origin: 50% 90%;
-      transition: transform 0.2s ease;
+      transition: opacity 0.2s ease;
       z-index: 7;
     }
 
-    .rocket.launch {
-      animation: launch 2.15s cubic-bezier(.2,.72,.3,1) forwards;
+    .rocket.hidden-for-launch {
+      opacity: 0;
     }
 
-    @keyframes launch {
-      0% { transform: translateX(-50%) translateY(0) rotate(0); opacity: 1; }
-      12% { transform: translateX(-50%) translateY(0) rotate(-2deg); opacity: 1; }
-      28% { transform: translateX(-50%) translateY(-62px) rotate(2deg); opacity: 1; }
-      82% { transform: translateX(-50%) translateY(calc(-1 * (min(55svh, 495px) - 155px))) rotate(0); opacity: 1; }
-      100% { transform: translateX(-50%) translateY(calc(-1 * (min(55svh, 495px) - 130px))) rotate(0); opacity: 0; }
+    .rocket.flyer {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: auto;
+      transform: none;
+      z-index: 120;
+      pointer-events: none;
+      will-change: transform, opacity;
     }
 
     .rocket-body {
@@ -439,10 +475,11 @@
     }
 
     .burst-star {
-      position: absolute;
-      z-index: 15;
+      position: fixed;
+      z-index: 130;
       font-size: var(--s);
       text-shadow: 0 0 15px rgba(255,217,90,0.9);
+      pointer-events: none;
       animation: burst 1.05s ease-out forwards;
     }
 
@@ -452,10 +489,11 @@
       100% { transform: translate(var(--bx), var(--by)) scale(1.05) rotate(var(--rot)); opacity: 0; }
     }
 
-    .jar-overlay {
+    .jar-overlay,
+    .ticket-overlay {
       position: fixed;
       inset: 0;
-      z-index: 30;
+      z-index: 140;
       display: none;
       place-items: center;
       background: rgba(2, 8, 28, 0.78);
@@ -463,11 +501,13 @@
       padding: 22px;
     }
 
-    .jar-overlay.show {
+    .jar-overlay.show,
+    .ticket-overlay.show {
       display: grid;
     }
 
-    .jar-card {
+    .jar-card,
+    .ticket-card {
       width: min(390px, 100%);
       border-radius: 30px;
       background: linear-gradient(180deg, #263f79, #112352);
@@ -476,16 +516,18 @@
       padding: 20px;
       text-align: center;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
     }
 
-    .jar-title {
+    .jar-title,
+    .ticket-title {
       font-size: 1.8rem;
       font-weight: 950;
       margin: 0 0 6px;
     }
 
-    .jar-subtitle {
+    .jar-subtitle,
+    .ticket-subtitle {
       color: var(--soft);
       margin: 0 0 14px;
       line-height: 1.25;
@@ -493,7 +535,7 @@
 
     .treat-jar {
       width: 176px;
-      height: 170px;
+      height: 175px;
       margin: 6px auto 14px;
       position: relative;
       overflow: visible;
@@ -502,7 +544,7 @@
     .lid {
       position: absolute;
       left: 37px;
-      top: 8px;
+      top: 54px;
       width: 102px;
       height: 25px;
       background: #ffd36e;
@@ -510,7 +552,7 @@
       box-shadow: 0 5px 0 #bd7f1c;
       transform-origin: 15% 100%;
       transition: transform 0.42s ease;
-      z-index: 7;
+      z-index: 8;
     }
 
     .lid.open {
@@ -520,9 +562,9 @@
     .jar-glass {
       position: absolute;
       left: 25px;
-      top: 32px;
+      top: 78px;
       width: 126px;
-      height: 124px;
+      height: 92px;
       border-radius: 21px 21px 39px 39px;
       background: linear-gradient(90deg, rgba(255,255,255,0.28), rgba(125,210,255,0.20), rgba(255,255,255,0.12));
       border: 3px solid rgba(227,247,255,0.75);
@@ -533,9 +575,9 @@
     .jar-sweets {
       position: absolute;
       left: 42px;
-      bottom: 22px;
+      bottom: 9px;
       width: 94px;
-      height: 58px;
+      height: 50px;
       background:
         radial-gradient(circle at 18px 20px, #ff7a7a 0 10px, transparent 11px),
         radial-gradient(circle at 46px 14px, #80ffb1 0 10px, transparent 11px),
@@ -547,7 +589,7 @@
     .scroll-roll {
       position: absolute;
       left: 50%;
-      top: 82px;
+      top: 72px;
       width: 98px;
       height: 32px;
       transform: translateX(-50%) scaleX(0.35);
@@ -555,7 +597,7 @@
       background: #fff0bf;
       box-shadow: inset 0 0 0 2px #d7b15e, 0 8px 14px rgba(0,0,0,0.25);
       opacity: 0;
-      z-index: 6;
+      z-index: 12;
     }
 
     .scroll-roll.fly {
@@ -565,20 +607,23 @@
     @keyframes scrollFly {
       0% { transform: translateX(-50%) translateY(0) scaleX(0.35); opacity: 0; }
       20% { opacity: 1; }
-      100% { transform: translateX(-50%) translateY(-82px) scaleX(1); opacity: 1; }
+      100% { transform: translateX(-50%) translateY(-86px) scaleX(1); opacity: 1; }
     }
 
     .scroll {
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.72s ease;
+      position: relative;
+      z-index: 20;
     }
 
     .scroll.show {
-      max-height: 260px;
+      max-height: 280px;
     }
 
-    .scroll-paper {
+    .scroll-paper,
+    .claim-paper {
       margin: 8px auto 12px;
       background:
         linear-gradient(90deg, rgba(115,72,24,0.12), transparent 9%, transparent 91%, rgba(115,72,24,0.12)),
@@ -593,9 +638,19 @@
       animation: unroll 0.55s ease both;
     }
 
+    .ticket-card.claiming {
+      animation: ticketClaimed 0.8s ease-in forwards;
+    }
+
     @keyframes unroll {
       from { transform: scaleY(0.08); opacity: 0.1; }
       to { transform: scaleY(1); opacity: 1; }
+    }
+
+    @keyframes ticketClaimed {
+      0% { transform: scale(1) rotate(0deg); opacity: 1; }
+      35% { transform: scale(1.08) rotate(-2deg); opacity: 1; }
+      100% { transform: scale(0.1) rotate(20deg); opacity: 0; }
     }
 
     .tier {
@@ -640,6 +695,16 @@
       color: white;
       font-weight: 800;
       flex: 0 0 auto;
+    }
+
+    .confirm-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .confirm-row button {
+      flex: 1;
     }
 
     details {
@@ -697,8 +762,8 @@
     </header>
 
     <section class="sky-card" aria-label="Olan's star sky">
-      <div class="moon" aria-hidden="true"></div>
-      <div class="progress-text" id="progressText">0 of 10 launch stars</div>
+      <div class="moon phase-full" id="moon" aria-hidden="true"></div>
+      <div class="progress-text" id="progressText">0 of 5 launch stars</div>
       <div class="sky-stars" id="skyStars"></div>
     </section>
 
@@ -733,7 +798,6 @@
 
       <div class="small-row">
         <button class="soft-button" id="undoButton">Undo last launch</button>
-        <button class="soft-button" id="newGreetingButton">New greeting</button>
       </div>
     </section>
 
@@ -758,7 +822,7 @@
   <div class="jar-overlay" id="jarOverlay" role="dialog" aria-modal="true" aria-label="Prize jar">
     <div class="jar-card">
       <p class="jar-title">Prize Jar!</p>
-      <p class="jar-subtitle">Ten stars launched. Tap the lid to open Olan's prize.</p>
+      <p class="jar-subtitle">Five stars launched. Tap the lid to open Olan's prize.</p>
 
       <div class="treat-jar" id="treatJar">
         <div class="lid" id="jarLid"></div>
@@ -779,9 +843,25 @@
     </div>
   </div>
 
+  <div class="ticket-overlay" id="ticketOverlay" role="dialog" aria-modal="true" aria-label="Claim prize ticket">
+    <div class="ticket-card" id="ticketCard">
+      <p class="ticket-title">Prize Ticket</p>
+      <p class="ticket-subtitle">Are you sure this prize has been claimed?</p>
+      <div class="claim-paper">
+        <span class="tier" id="claimTier">Prize</span>
+        <div id="claimText">Prize text</div>
+      </div>
+      <div class="confirm-row">
+        <button class="soft-button" id="cancelClaimButton">No</button>
+        <button class="soft-button danger" id="confirmClaimButton">Yes, claim it</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const STORAGE_KEY = "olan-star-rocket-v1";
-    const TARGET_STARS = 10;
+    const STORAGE_KEY = "olan-star-rocket-v2";
+    const LEGACY_STORAGE_KEY = "olan-star-rocket-v1";
+    const TARGET_STARS = 5;
 
     const welcomes = [
       "How was school today? I bet you were a great boy.",
@@ -792,6 +872,17 @@
       "Let's send today's stars into space.",
       "Great work getting through school today. Time to launch.",
       "Star mission ready. How did today go?"
+    ];
+
+    const moonPhases = [
+      "phase-new",
+      "phase-wax-crescent",
+      "phase-first-quarter",
+      "phase-wax-gibbous",
+      "phase-full",
+      "phase-wan-gibbous",
+      "phase-last-quarter",
+      "phase-wan-crescent"
     ];
 
     const afterLaunchMessages = [
@@ -861,23 +952,26 @@
       selected: 0,
       tickets: [],
       history: [],
-      lastLaunch: null
+      lastLaunch: null,
+      lastGreetingIndex: -1,
+      lastMoonIndex: -1
     };
 
     let state = loadState();
     let pendingPrize = null;
     let isAnimating = false;
+    let ticketPendingClaim = null;
 
     const skyStars = document.getElementById("skyStars");
     const progressText = document.getElementById("progressText");
     const welcomeText = document.getElementById("welcomeText");
+    const moon = document.getElementById("moon");
     const pickerButtons = [...document.querySelectorAll(".pick-star")];
     const launchButton = document.getElementById("launchButton");
     const messageText = document.getElementById("messageText");
     const launchStage = document.getElementById("launchStage");
     const rocket = document.getElementById("rocket");
     const undoButton = document.getElementById("undoButton");
-    const newGreetingButton = document.getElementById("newGreetingButton");
     const ticketsCard = document.getElementById("ticketsCard");
     const ticketList = document.getElementById("ticketList");
     const historyList = document.getElementById("historyList");
@@ -891,10 +985,16 @@
     const prizeTier = document.getElementById("prizeTier");
     const prizeText = document.getElementById("prizeText");
     const closeJarButton = document.getElementById("closeJarButton");
+    const ticketOverlay = document.getElementById("ticketOverlay");
+    const ticketCard = document.getElementById("ticketCard");
+    const claimTier = document.getElementById("claimTier");
+    const claimText = document.getElementById("claimText");
+    const cancelClaimButton = document.getElementById("cancelClaimButton");
+    const confirmClaimButton = document.getElementById("confirmClaimButton");
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
         return raw ? { ...defaultState, ...JSON.parse(raw) } : { ...defaultState };
       } catch {
         return { ...defaultState };
@@ -905,12 +1005,31 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
+    function randomIndexAvoiding(length, avoidIndex) {
+      if (length <= 1) return 0;
+      let index = Math.floor(Math.random() * length);
+      if (index === avoidIndex) {
+        index = (index + 1 + Math.floor(Math.random() * (length - 1))) % length;
+      }
+      return index;
+    }
+
     function randomItem(items) {
       return items[Math.floor(Math.random() * items.length)];
     }
 
-    function setRandomGreeting() {
-      welcomeText.textContent = randomItem(welcomes);
+    function setOpeningGreeting() {
+      const index = randomIndexAvoiding(welcomes.length, state.lastGreetingIndex);
+      state.lastGreetingIndex = index;
+      welcomeText.textContent = welcomes[index];
+      saveState();
+    }
+
+    function setOpeningMoon() {
+      const index = randomIndexAvoiding(moonPhases.length, state.lastMoonIndex);
+      state.lastMoonIndex = index;
+      moon.className = "moon " + moonPhases[index];
+      saveState();
     }
 
     function drawTwinkles() {
@@ -932,8 +1051,7 @@
 
       skyStars.innerHTML = "";
       const offsets = [
-        [-8, -1, 0], [5, 2, -1], [-3, -2, 1], [9, 1, 0], [-6, -1, -1],
-        [4, 2, 1], [8, -2, 0], [-7, 1, -1], [2, -1, 1], [-4, 2, 0]
+        [-8, -1, 0], [5, 2, -1], [-3, -2, 1], [9, 1, 0], [-6, -1, -1]
       ];
 
       for (let i = 1; i <= TARGET_STARS; i++) {
@@ -969,11 +1087,8 @@
         const label = document.createElement("div");
         label.innerHTML = `<strong>${escapeHtml(ticket.tier)}</strong><br>${escapeHtml(ticket.prize)}`;
         const button = document.createElement("button");
-        button.textContent = "Claimed";
-        button.addEventListener("click", () => {
-          state.tickets = state.tickets.filter(t => t.id !== ticket.id);
-          render();
-        });
+        button.textContent = "Claim";
+        button.addEventListener("click", () => askToClaimTicket(ticket));
         row.appendChild(label);
         row.appendChild(button);
         ticketList.appendChild(row);
@@ -1026,12 +1141,10 @@
       animateFallingStars(added);
 
       setTimeout(() => {
-        rocket.classList.add("launch");
+        launchRocketOverlay();
       }, 700);
 
       setTimeout(() => {
-        animateTopBurst();
-
         const before = state.stars;
         let total = before + added;
         const wonPrize = total >= TARGET_STARS;
@@ -1052,21 +1165,20 @@
         state.selected = 0;
 
         messageText.textContent = wonPrize
-          ? "Ten stars! The prize jar is opening."
+          ? "Five stars! The prize jar is opening."
           : randomItem(afterLaunchMessages);
 
         render();
-      }, 2050);
+      }, 2150);
 
       setTimeout(() => {
-        rocket.classList.remove("launch");
         isAnimating = false;
         render();
 
         if (pendingPrize) {
           showPrizeJar(pendingPrize);
         }
-      }, 2550);
+      }, 2700);
     }
 
     function animateFallingStars(count) {
@@ -1090,23 +1202,60 @@
       }
     }
 
-    function animateTopBurst() {
-      const centreX = launchStage.clientWidth / 2;
-      const centreY = 32;
+    function launchRocketOverlay() {
+      const rect = rocket.getBoundingClientRect();
+      const flyer = rocket.cloneNode(true);
+      flyer.id = "";
+      flyer.classList.remove("hidden-for-launch");
+      flyer.classList.add("flyer");
+      flyer.style.width = rect.width + "px";
+      flyer.style.height = rect.height + "px";
+      flyer.style.left = rect.left + "px";
+      flyer.style.top = rect.top + "px";
+      document.body.appendChild(flyer);
+      rocket.classList.add("hidden-for-launch");
 
+      const startY = rect.top;
+      const endY = 10 + Math.max(0, window.visualViewport ? window.visualViewport.offsetTop : 0);
+      const travel = endY - startY;
+      const wobble = window.innerWidth * 0.025;
+
+      const animation = flyer.animate([
+        { transform: "translate(0, 0) rotate(0deg)", opacity: 1, offset: 0 },
+        { transform: `translate(${-wobble}px, 0px) rotate(-2deg)`, opacity: 1, offset: 0.14 },
+        { transform: `translate(${wobble}px, ${travel * 0.36}px) rotate(2deg)`, opacity: 1, offset: 0.45 },
+        { transform: `translate(0px, ${travel}px) rotate(0deg)`, opacity: 1, offset: 0.86 },
+        { transform: `translate(0px, ${travel - 20}px) rotate(0deg)`, opacity: 0, offset: 1 }
+      ], {
+        duration: 1550,
+        easing: "cubic-bezier(.22,.72,.28,1)",
+        fill: "forwards"
+      });
+
+      setTimeout(() => {
+        animateScreenBurst(rect.left + rect.width / 2, endY + 20);
+      }, 1380);
+
+      animation.onfinish = () => {
+        flyer.remove();
+        rocket.classList.remove("hidden-for-launch");
+      };
+    }
+
+    function animateScreenBurst(x, y) {
       for (let i = 0; i < 22; i++) {
         const s = document.createElement("div");
         s.className = "burst-star";
         s.textContent = i % 3 === 0 ? "✦" : "★";
-        s.style.left = `${centreX}px`;
-        s.style.top = `${centreY}px`;
+        s.style.left = `${x}px`;
+        s.style.top = `${y}px`;
         s.style.setProperty("--s", `${1.25 + Math.random() * 0.75}rem`);
         const angle = (Math.PI * 2 * i) / 22;
         const distance = 38 + Math.random() * 72;
         s.style.setProperty("--bx", `${Math.cos(angle) * distance}px`);
         s.style.setProperty("--by", `${Math.sin(angle) * distance}px`);
         s.style.setProperty("--rot", `${Math.floor(Math.random() * 220) - 110}deg`);
-        launchStage.appendChild(s);
+        document.body.appendChild(s);
         setTimeout(() => s.remove(), 1200);
       }
     }
@@ -1154,6 +1303,32 @@
       render();
     }
 
+    function askToClaimTicket(ticket) {
+      ticketPendingClaim = ticket;
+      claimTier.textContent = ticket.tier;
+      claimText.textContent = ticket.prize;
+      ticketCard.classList.remove("claiming");
+      ticketOverlay.classList.add("show");
+    }
+
+    function cancelClaimTicket() {
+      ticketPendingClaim = null;
+      ticketOverlay.classList.remove("show");
+      ticketCard.classList.remove("claiming");
+    }
+
+    function confirmClaimTicket() {
+      if (!ticketPendingClaim) return;
+      ticketCard.classList.add("claiming");
+      setTimeout(() => {
+        state.tickets = state.tickets.filter(t => t.id !== ticketPendingClaim.id);
+        ticketPendingClaim = null;
+        ticketOverlay.classList.remove("show");
+        ticketCard.classList.remove("claiming");
+        render();
+      }, 780);
+    }
+
     function undoLastLaunch() {
       if (!state.lastLaunch || isAnimating) {
         messageText.textContent = "No launch to undo.";
@@ -1172,6 +1347,7 @@
       if (!ok) return;
       state = { ...defaultState, tickets: [], history: [], lastLaunch: null };
       pendingPrize = null;
+      ticketPendingClaim = null;
       messageText.textContent = "App reset.";
       render();
     }
@@ -1182,7 +1358,6 @@
 
     launchButton.addEventListener("click", launchStars);
     undoButton.addEventListener("click", undoLastLaunch);
-    newGreetingButton.addEventListener("click", setRandomGreeting);
 
     openJarButton.addEventListener("click", () => {
       jarLid.classList.add("open");
@@ -1192,6 +1367,8 @@
     });
 
     closeJarButton.addEventListener("click", closePrizeJar);
+    cancelClaimButton.addEventListener("click", cancelClaimTicket);
+    confirmClaimButton.addEventListener("click", confirmClaimTicket);
 
     subtractButton.addEventListener("click", () => {
       state.stars = Math.max(0, state.stars - 1);
@@ -1203,7 +1380,8 @@
     resetButton.addEventListener("click", resetApp);
 
     drawTwinkles();
-    setRandomGreeting();
+    setOpeningGreeting();
+    setOpeningMoon();
     render();
   </script>
 </body>
