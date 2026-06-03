@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en-IE">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#07142f" />
+  <title>Olan's Star Rocket</title>
+  <style>
+    :root {
+      --bg1: #06132f;
+      --bg2: #102b63;
+      --panel: rgba(255, 255, 255, 0.12);
+      --panel2: rgba(255, 255, 255, 0.18);
+      --text: #fff8dc;
+      --soft: #dbe9ff;
+      --gold: #ffd95a;
+      --gold2: #fff2a8;
+      --rocket: #f7f7ff;
+      --red: #ff6b6b;
+      --blue: #6ec7ff;
+      --green: #9cffb6;
+      --shadow: rgba(0, 0, 0, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(circle at 50% 10%, #1b54a8 0%, var(--bg2) 35%, var(--bg1) 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100svh;
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 460px;
+      margin: 0 auto;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .twinkles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0.8;
+    }
+
+    .twinkles span {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      animation: twinkle 2.8s infinite ease-in-out;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.25; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.25); }
+    }
+
+    header {
+      padding: 16px 8px 4px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 8vw, 2.7rem);
+      letter-spacing: 0.02em;
+      text-shadow: 0 3px 14px var(--shadow);
+    }
+
+    .welcome {
+      margin: 8px auto 0;
+      line-height: 1.25;
+      font-size: clamp(1rem, 4.5vw, 1.25rem);
+      color: var(--soft);
+      max-width: 360px;
+    }
+
+    .sky-card {
+      position: relative;
+      z-index: 2;
+      min-height: 190px;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.07));
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 16px 35px rgba(0,0,0,0.22);
+      overflow: hidden;
+      padding: 14px;
+    }
+
+    .moon {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fff7c9, #ffd56a);
+      box-shadow: 0 0 22px rgba(255, 230, 120, 0.65);
+      opacity: 0.9;
+    }
+
+    .progress-text {
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      font-size: 1rem;
+      text-shadow: 0 2px 8px var(--shadow);
+      margin-bottom: 10px;
+    }
+
+    .sky-stars {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 8px 2px 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .slot {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: clamp(1.25rem, 9vw, 2rem);
+      background: rgba(0,0,0,0.12);
+      border: 1px dashed rgba(255,255,255,0.18);
+      transform: rotate(var(--r));
+    }
+
+    .slot.filled {
+      background: radial-gradient(circle, rgba(255,243,164,0.26), rgba(255,217,90,0.05));
+      border: 1px solid rgba(255,217,90,0.3);
+      text-shadow: 0 0 15px rgba(255, 217, 90, 0.95);
+      animation: settle 0.45s ease both;
+    }
+
+    @keyframes settle {
+      from { transform: scale(1.4) rotate(var(--r)); opacity: 0; }
+      to { transform: scale(1) rotate(var(--r)); opacity: 1; }
+    }
+
+    .selection-card, .tickets-card, .history-card {
+      position: relative;
+      z-index: 2;
+      border-radius: 24px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+      backdrop-filter: blur(8px);
+    }
+
+    .prompt {
+      margin: 0 0 10px;
+      color: var(--soft);
+      font-size: 1.02rem;
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    .star-picker {
+      display: flex;
+      justify-content: center;
+      gap: clamp(5px, 2vw, 9px);
+      padding: 4px 0 12px;
+    }
+
+    .pick-star {
+      border: 0;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.45);
+      font-size: clamp(2.2rem, 13vw, 3.4rem);
+      padding: 0;
+      line-height: 1;
+      filter: drop-shadow(0 3px 3px rgba(0,0,0,0.25));
+      transition: transform 0.12s ease, color 0.12s ease;
+    }
+
+    .pick-star.selected {
+      color: var(--gold);
+      transform: scale(1.08);
+      text-shadow: 0 0 15px rgba(255,217,90,0.85);
+    }
+
+    .rocket-stage {
+      position: relative;
+      height: 172px;
+      margin-top: 2px;
+      overflow: hidden;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.06), rgba(255,255,255,0.06));
+    }
+
+    .ground {
+      position: absolute;
+      bottom: 0;
+      left: -10%;
+      width: 120%;
+      height: 42px;
+      background: radial-gradient(ellipse at 50% 0%, #446a63, #243b45 60%, #1a2534 100%);
+      border-radius: 50% 50% 0 0;
+    }
+
+    .rocket {
+      position: absolute;
+      bottom: 22px;
+      left: 50%;
+      width: 70px;
+      height: 112px;
+      transform: translateX(-50%);
+      transform-origin: 50% 90%;
+      transition: transform 0.2s ease;
+    }
+
+    .rocket.launch {
+      animation: launch 1.45s ease-in forwards;
+    }
+
+    @keyframes launch {
+      0% { transform: translateX(-50%) translateY(0) rotate(0); }
+      15% { transform: translateX(-50%) translateY(0) rotate(-2deg); }
+      35% { transform: translateX(-50%) translateY(-35px) rotate(2deg); }
+      100% { transform: translateX(-50%) translateY(-245px) rotate(0); }
+    }
+
+    .rocket-body {
+      position: absolute;
+      left: 20px;
+      top: 7px;
+      width: 30px;
+      height: 78px;
+      background: linear-gradient(90deg, #e6ecff, var(--rocket), #bec9ec);
+      border-radius: 50% 50% 38% 38%;
+      box-shadow: inset -5px 0 0 rgba(0,0,0,0.08);
+    }
+
+    .rocket-nose {
+      position: absolute;
+      left: 20px;
+      top: -8px;
+      width: 30px;
+      height: 32px;
+      background: var(--red);
+      border-radius: 50% 50% 14% 14%;
+      clip-path: polygon(50% 0%, 100% 85%, 0% 85%);
+    }
+
+    .window {
+      position: absolute;
+      left: 25px;
+      top: 29px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #d9fbff, var(--blue));
+      border: 3px solid #7382a7;
+    }
+
+    .fin {
+      position: absolute;
+      top: 69px;
+      width: 24px;
+      height: 35px;
+      background: var(--red);
+    }
+
+    .fin.left {
+      left: 5px;
+      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    }
+
+    .fin.right {
+      right: 5px;
+      clip-path: polygon(0 0, 100% 100%, 0 100%);
+    }
+
+    .flame {
+      position: absolute;
+      left: 26px;
+      top: 83px;
+      width: 18px;
+      height: 37px;
+      border-radius: 50% 50% 50% 50%;
+      background: radial-gradient(circle at 50% 25%, #fff5a6 0 20%, #ff9d3f 45%, #ff4e4e 70%, transparent 72%);
+      opacity: 0.9;
+      animation: flame 0.16s infinite alternate;
+    }
+
+    @keyframes flame {
+      from { transform: scaleY(0.82); opacity: 0.75; }
+      to { transform: scaleY(1.12); opacity: 1; }
+    }
+
+    .falling-star {
+      position: absolute;
+      z-index: 4;
+      font-size: 2rem;
+      text-shadow: 0 0 14px rgba(255,217,90,0.9);
+      animation: fallToRocket 0.85s ease-in forwards;
+    }
+
+    @keyframes fallToRocket {
+      0% { transform: translate(0, -20px) scale(1.2) rotate(0deg); opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0.35) rotate(270deg); opacity: 0; }
+    }
+
+    .burst-star {
+      position: absolute;
+      z-index: 6;
+      font-size: 1.8rem;
+      text-shadow: 0 0 15px rgba(255,217,90,0.9);
+      animation: burst 0.95s ease-out forwards;
+    }
+
+    @keyframes burst {
+      0% { transform: translate(0, 0) scale(0.4); opacity: 1; }
+      100% { transform: translate(var(--bx), var(--by)) scale(1.1); opacity: 0; }
+    }
+
+    button.main {
+      width: 100%;
+      border: 0;
+      border-radius: 18px;
+      padding: 15px 16px;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #17325f;
+      background: linear-gradient(180deg, #fff9be, var(--gold));
+      box-shadow: 0 8px 0 #c68b10, 0 14px 24px rgba(0,0,0,0.24);
+      transform: translateY(0);
+    }
+
+    button.main:active {
+      transform: translateY(4px);
+      box-shadow: 0 4px 0 #c68b10, 0 9px 16px rgba(0,0,0,0.22);
+    }
+
+    button.main:disabled {
+      opacity: 0.55;
+      filter: grayscale(0.4);
+    }
+
+    .small-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .soft-button {
+      flex: 1;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: var(--panel2);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .message {
+      min-height: 34px;
+      text-align: center;
+      margin: 10px 0 0;
+      color: var(--soft);
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .jar-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      place-items: center;
+      background: rgba(2, 8, 28, 0.78);
+      backdrop-filter: blur(6px);
+      padding: 22px;
+    }
+
+    .jar-overlay.show {
+      display: grid;
+    }
+
+    .jar-card {
+      width: min(390px, 100%);
+      border-radius: 30px;
+      background: linear-gradient(180deg, #263f79, #112352);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 22px 70px rgba(0,0,0,0.45);
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .jar-title {
+      font-size: 1.8rem;
+      font-weight: 950;
+      margin: 0 0 6px;
+    }
+
+    .jar-subtitle {
+      color: var(--soft);
+      margin: 0 0 14px;
+      line-height: 1.25;
+    }
+
+    .treat-jar {
+      width: 160px;
+      height: 145px;
+      margin: 8px auto 14px;
+      position: relative;
+    }
+
+    .lid {
+      position: absolute;
+      left: 34px;
+      top: 0;
+      width: 92px;
+      height: 24px;
+      background: #ffd36e;
+      border-radius: 16px 16px 8px 8px;
+      box-shadow: 0 5px 0 #c48725;
+      transform-origin: 15% 100%;
+      transition: transform 0.45s ease;
+      z-index: 3;
+    }
+
+    .lid.open {
+      transform: translateY(-18px) rotate(-24deg);
+    }
+
+    .jar-glass {
+      position: absolute;
+      left: 24px;
+      top: 22px;
+      width: 112px;
+      height: 116px;
+      border-radius: 20px 20px 36px 36px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.26), rgba(125,210,255,0.2), rgba(255,255,255,0.12));
+      border: 3px solid rgba(227,247,255,0.75);
+      box-shadow: inset 0 0 18px rgba(255,255,255,0.16);
+    }
+
+    .jar-sweets {
+      position: absolute;
+      left: 39px;
+      bottom: 18px;
+      width: 82px;
+      height: 54px;
+      background:
+        radial-gradient(circle at 18px 20px, #ff7a7a 0 10px, transparent 11px),
+        radial-gradient(circle at 44px 14px, #80ffb1 0 10px, transparent 11px),
+        radial-gradient(circle at 62px 30px, #ffe36d 0 10px, transparent 11px),
+        radial-gradient(circle at 30px 38px, #8cc9ff 0 10px, transparent 11px);
+      z-index: 2;
+    }
+
+    .scroll {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.65s ease;
+    }
+
+    .scroll.show {
+      max-height: 240px;
+    }
+
+    .scroll-paper {
+      margin: 8px auto 12px;
+      background: #fff0bf;
+      color: #4b2b11;
+      border-radius: 16px;
+      padding: 16px 14px;
+      box-shadow: inset 0 0 0 2px #dfb965, 0 8px 18px rgba(0,0,0,0.22);
+      font-weight: 850;
+      line-height: 1.2;
+    }
+
+    .tier {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      color: #17325f;
+      background: #fff;
+    }
+
+    .tickets-card h2, .history-card h2 {
+      font-size: 1.15rem;
+      margin: 0 0 8px;
+    }
+
+    .ticket-list, .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ticket, .history-item {
+      border-radius: 14px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.13);
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.94rem;
+      line-height: 1.15;
+    }
+
+    .ticket button {
+      border: 0;
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.18);
+      color: white;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    details {
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 2;
+    }
+
+    summary {
+      text-align: center;
+      color: rgba(255,255,255,0.7);
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+
+    .danger {
+      background: rgba(255, 92, 92, 0.22) !important;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="twinkles" aria-hidden="true" id="twinkles"></div>
+
+  <main class="app">
+    <header>
+      <h1>Hi Olan 🚀</h1>
+      <p class="welcome" id="welcomeText">How was school today?</p>
+    </header>
+
+    <section class="sky-card" aria-label="Olan's star sky">
+      <div class="moon" aria-hidden="true"></div>
+      <div class="progress-text" id="progressText">0 of 20 launch stars</div>
+      <div class="sky-stars" id="skyStars"></div>
+    </section>
+
+    <section class="selection-card">
+      <p class="prompt">Tap the stars Olan earned today.</p>
+      <div class="star-picker" aria-label="Choose today's stars">
+        <button class="pick-star" data-value="1" aria-label="1 star">★</button>
+        <button class="pick-star" data-value="2" aria-label="2 stars">★</button>
+        <button class="pick-star" data-value="3" aria-label="3 stars">★</button>
+        <button class="pick-star" data-value="4" aria-label="4 stars">★</button>
+        <button class="pick-star" data-value="5" aria-label="5 stars">★</button>
+      </div>
+
+      <div class="rocket-stage" id="rocketStage">
+        <div class="rocket" id="rocket" aria-hidden="true">
+          <div class="rocket-nose"></div>
+          <div class="rocket-body"></div>
+          <div class="window"></div>
+          <div class="fin left"></div>
+          <div class="fin right"></div>
+          <div class="flame"></div>
+        </div>
+        <div class="ground"></div>
+      </div>
+
+      <button class="main" id="launchButton" disabled>Launch Stars</button>
+      <p class="message" id="messageText">Choose 1 to 5 stars, then launch the rocket.</p>
+
+      <div class="small-row">
+        <button class="soft-button" id="undoButton">Undo last launch</button>
+        <button class="soft-button" id="newGreetingButton">New greeting</button>
+      </div>
+    </section>
+
+    <section class="tickets-card hidden" id="ticketsCard">
+      <h2>Prize Tickets</h2>
+      <div class="ticket-list" id="ticketList"></div>
+    </section>
+
+    <details>
+      <summary>Parent tools</summary>
+      <section class="history-card">
+        <h2>Recent launches</h2>
+        <div class="history-list" id="historyList"></div>
+        <div class="small-row">
+          <button class="soft-button" id="subtractButton">Remove 1 star</button>
+          <button class="soft-button danger" id="resetButton">Reset app</button>
+        </div>
+      </section>
+    </details>
+  </main>
+
+  <div class="jar-overlay" id="jarOverlay" role="dialog" aria-modal="true" aria-label="Prize jar">
+    <div class="jar-card">
+      <p class="jar-title">Prize Jar!</p>
+      <p class="jar-subtitle">Twenty stars launched. Tap the lid to open Olan's prize.</p>
+
+      <div class="treat-jar" id="treatJar">
+        <div class="lid" id="jarLid"></div>
+        <div class="jar-glass"></div>
+        <div class="jar-sweets"></div>
+      </div>
+
+      <button class="main" id="openJarButton">Open the Jar</button>
+
+      <div class="scroll" id="scroll">
+        <div class="scroll-paper">
+          <span class="tier" id="prizeTier">Prize</span>
+          <div id="prizeText">Prize text</div>
+        </div>
+        <button class="soft-button" id="closeJarButton">Save Prize Ticket</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "olan-star-rocket-v1";
+
+    const welcomes = [
+      "How was school today? I bet you were a great boy.",
+      "Mission control is ready. How many stars did Olan earn today?",
+      "Ready to launch today's school stars?",
+      "Another school day completed. Rocket standing by.",
+      "Olan's rocket is fuelled and ready.",
+      "Let's send today's stars into space.",
+      "Great work getting through school today. Time to launch.",
+      "Star mission ready. How did today go?"
+    ];
+
+    const afterLaunchMessages = [
+      "Brilliant work, Olan. Have a great day in school tomorrow.",
+      "Great boy. Your rocket is getting closer to the prize jar.",
+      "Mission complete. Those stars are safely in the sky.",
+      "Excellent launch. Keep going, Olan.",
+      "Well done today. The sky is filling up nicely.",
+      "Star launch successful. Tomorrow is another mission."
+    ];
+
+    const prizeTiers = [
+      {
+        name: "Rocket Prize",
+        weight: 60,
+        prizes: [
+          "30 minutes extra PlayStation time",
+          "30 minutes extra tablet time",
+          "Hot chocolate",
+          "Double dessert tonight",
+          "Trip to the shop to buy sweets",
+          "Choose a film or programme tonight",
+          "Stay up 15 minutes later",
+          "Pick dinner one evening"
+        ]
+      },
+      {
+        name: "Rare Rocket Prize",
+        weight: 25,
+        prizes: [
+          "45 minutes extra PlayStation time",
+          "45 minutes extra tablet time",
+          "Trip to McDonald's",
+          "Swimming pool trip",
+          "Choose a family activity",
+          "New small magazine, comic or book",
+          "Special dessert from the shop"
+        ]
+      },
+      {
+        name: "Super Rare Prize",
+        weight: 12,
+        prizes: [
+          "1 hour extra PlayStation time",
+          "1 hour extra tablet time",
+          "Trip to Smyths Toys Superstore",
+          "Cinema trip",
+          "New small toy",
+          "Pick a weekend activity"
+        ]
+      },
+      {
+        name: "Legendary Prize",
+        weight: 3,
+        prizes: [
+          "Big Smyths trip",
+          "Swimming pool plus treat afterwards",
+          "McDonald's plus playground or activity",
+          "Special day out with Mam or Dad",
+          "Choose a bigger reward from the parent-approved list"
+        ]
+      }
+    ];
+
+    const defaultState = {
+      stars: 0,
+      selected: 0,
+      tickets: [],
+      history: [],
+      lastLaunch: null
+    };
+
+    let state = loadState();
+    let pendingPrize = null;
+    let isAnimating = false;
+
+    const skyStars = document.getElementById("skyStars");
+    const progressText = document.getElementById("progressText");
+    const welcomeText = document.getElementById("welcomeText");
+    const pickerButtons = [...document.querySelectorAll(".pick-star")];
+    const launchButton = document.getElementById("launchButton");
+    const messageText = document.getElementById("messageText");
+    const rocketStage = document.getElementById("rocketStage");
+    const rocket = document.getElementById("rocket");
+    const undoButton = document.getElementById("undoButton");
+    const newGreetingButton = document.getElementById("newGreetingButton");
+    const ticketsCard = document.getElementById("ticketsCard");
+    const ticketList = document.getElementById("ticketList");
+    const historyList = document.getElementById("historyList");
+    const resetButton = document.getElementById("resetButton");
+    const subtractButton = document.getElementById("subtractButton");
+    const jarOverlay = document.getElementById("jarOverlay");
+    const openJarButton = document.getElementById("openJarButton");
+    const jarLid = document.getElementById("jarLid");
+    const scroll = document.getElementById("scroll");
+    const prizeTier = document.getElementById("prizeTier");
+    const prizeText = document.getElementById("prizeText");
+    const closeJarButton = document.getElementById("closeJarButton");
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? { ...defaultState, ...JSON.parse(raw) } : { ...defaultState };
+      } catch {
+        return { ...defaultState };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function randomItem(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function setRandomGreeting() {
+      welcomeText.textContent = randomItem(welcomes);
+    }
+
+    function drawTwinkles() {
+      const wrap = document.getElementById("twinkles");
+      wrap.innerHTML = "";
+      for (let i = 0; i < 70; i++) {
+        const s = document.createElement("span");
+        s.style.left = Math.random() * 100 + "%";
+        s.style.top = Math.random() * 100 + "%";
+        s.style.animationDelay = (Math.random() * 3) + "s";
+        s.style.opacity = 0.2 + Math.random() * 0.8;
+        wrap.appendChild(s);
+      }
+    }
+
+    function render() {
+      state.stars = Math.max(0, Math.min(19, Number(state.stars) || 0));
+      progressText.textContent = `${state.stars} of 20 launch stars`;
+
+      skyStars.innerHTML = "";
+      for (let i = 1; i <= 20; i++) {
+        const slot = document.createElement("div");
+        slot.className = "slot" + (i <= state.stars ? " filled" : "");
+        slot.style.setProperty("--r", `${[-8,5,-3,9,-6,4,8,-7,2,-4,7,-2,5,-8,3,9,-5,4,-3,8][i-1]}deg`);
+        slot.textContent = i <= state.stars ? "★" : "";
+        skyStars.appendChild(slot);
+      }
+
+      pickerButtons.forEach(btn => {
+        const value = Number(btn.dataset.value);
+        btn.classList.toggle("selected", value <= state.selected);
+      });
+
+      launchButton.disabled = state.selected < 1 || state.selected > 5 || isAnimating;
+
+      renderTickets();
+      renderHistory();
+      saveState();
+    }
+
+    function renderTickets() {
+      ticketList.innerHTML = "";
+      ticketsCard.classList.toggle("hidden", state.tickets.length === 0);
+
+      state.tickets.forEach(ticket => {
+        const row = document.createElement("div");
+        row.className = "ticket";
+        const label = document.createElement("div");
+        label.innerHTML = `<strong>${escapeHtml(ticket.tier)}</strong><br>${escapeHtml(ticket.prize)}`;
+        const button = document.createElement("button");
+        button.textContent = "Claimed";
+        button.addEventListener("click", () => {
+          state.tickets = state.tickets.filter(t => t.id !== ticket.id);
+          render();
+        });
+        row.appendChild(label);
+        row.appendChild(button);
+        ticketList.appendChild(row);
+      });
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = "";
+      const items = state.history.slice(0, 6);
+      if (items.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "history-item";
+        empty.textContent = "No launches yet.";
+        historyList.appendChild(empty);
+        return;
+      }
+
+      items.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "history-item";
+        const prizePart = item.prize ? ` Prize: ${item.prize}.` : "";
+        row.textContent = `${item.date}: launched ${item.added} star${item.added === 1 ? "" : "s"}.${prizePart}`;
+        historyList.appendChild(row);
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function chooseStars(value) {
+      if (isAnimating) return;
+      state.selected = value;
+      messageText.textContent = `${value} star${value === 1 ? "" : "s"} selected. Ready to launch.`;
+      render();
+    }
+
+    function launchStars() {
+      if (isAnimating || state.selected < 1) return;
+      isAnimating = true;
+      launchButton.disabled = true;
+
+      const added = state.selected;
+      animateFallingStars(added);
+
+      setTimeout(() => {
+        rocket.classList.add("launch");
+      }, 700);
+
+      setTimeout(() => {
+        animateBurst();
+        const before = state.stars;
+        let total = before + added;
+        const wonPrize = total >= 20;
+        if (wonPrize) {
+          total -= 20;
+          pendingPrize = choosePrize();
+        }
+
+        state.stars = total;
+        state.lastLaunch = { before, added, selectedBefore: added, prize: pendingPrize };
+        const historyItem = {
+          date: new Date().toLocaleDateString("en-IE", { weekday: "short", day: "numeric", month: "short" }),
+          added,
+          prize: pendingPrize ? pendingPrize.prize : ""
+        };
+        state.history.unshift(historyItem);
+        state.history = state.history.slice(0, 20);
+        state.selected = 0;
+
+        messageText.textContent = wonPrize
+          ? "Twenty stars! The prize jar is opening."
+          : randomItem(afterLaunchMessages);
+
+        render();
+      }, 1700);
+
+      setTimeout(() => {
+        rocket.classList.remove("launch");
+        isAnimating = false;
+        render();
+
+        if (pendingPrize) {
+          showPrizeJar(pendingPrize);
+        }
+      }, 2200);
+    }
+
+    function animateFallingStars(count) {
+      const stageRect = rocketStage.getBoundingClientRect();
+      for (let i = 0; i < count; i++) {
+        const s = document.createElement("div");
+        s.className = "falling-star";
+        s.textContent = "★";
+        const startX = stageRect.width * (0.18 + i * (0.64 / Math.max(1, count - 1 || 1)));
+        const startY = 8 + (i % 2) * 8;
+        s.style.left = `${startX}px`;
+        s.style.top = `${startY}px`;
+        const dx = stageRect.width / 2 - startX - 8;
+        const dy = 88 - startY;
+        s.style.setProperty("--dx", `${dx}px`);
+        s.style.setProperty("--dy", `${dy}px`);
+        s.style.animationDelay = `${i * 0.08}s`;
+        rocketStage.appendChild(s);
+        setTimeout(() => s.remove(), 1200);
+      }
+    }
+
+    function animateBurst() {
+      const centreX = rocketStage.clientWidth / 2;
+      const centreY = 34;
+      for (let i = 0; i < 18; i++) {
+        const s = document.createElement("div");
+        s.className = "burst-star";
+        s.textContent = i % 3 === 0 ? "✦" : "★";
+        s.style.left = `${centreX}px`;
+        s.style.top = `${centreY}px`;
+        const angle = (Math.PI * 2 * i) / 18;
+        const distance = 44 + Math.random() * 45;
+        s.style.setProperty("--bx", `${Math.cos(angle) * distance}px`);
+        s.style.setProperty("--by", `${Math.sin(angle) * distance}px`);
+        rocketStage.appendChild(s);
+        setTimeout(() => s.remove(), 1100);
+      }
+    }
+
+    function choosePrize() {
+      const totalWeight = prizeTiers.reduce((sum, tier) => sum + tier.weight, 0);
+      let roll = Math.random() * totalWeight;
+      let chosenTier = prizeTiers[0];
+
+      for (const tier of prizeTiers) {
+        roll -= tier.weight;
+        if (roll <= 0) {
+          chosenTier = tier;
+          break;
+        }
+      }
+
+      return {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        tier: chosenTier.name,
+        prize: randomItem(chosenTier.prizes),
+        created: new Date().toISOString()
+      };
+    }
+
+    function showPrizeJar(prize) {
+      jarOverlay.classList.add("show");
+      jarLid.classList.remove("open");
+      scroll.classList.remove("show");
+      openJarButton.classList.remove("hidden");
+      prizeTier.textContent = prize.tier;
+      prizeText.textContent = prize.prize;
+    }
+
+    function closePrizeJar() {
+      if (pendingPrize) {
+        state.tickets.unshift(pendingPrize);
+        pendingPrize = null;
+      }
+      jarOverlay.classList.remove("show");
+      jarLid.classList.remove("open");
+      scroll.classList.remove("show");
+      render();
+    }
+
+    function undoLastLaunch() {
+      if (!state.lastLaunch || isAnimating) {
+        messageText.textContent = "No launch to undo.";
+        return;
+      }
+
+      state.stars = state.lastLaunch.before;
+      state.history.shift();
+      state.lastLaunch = null;
+      messageText.textContent = "Last launch undone.";
+      render();
+    }
+
+    function resetApp() {
+      const ok = confirm("Reset all stars, prize tickets and history?");
+      if (!ok) return;
+      state = { ...defaultState, tickets: [], history: [], lastLaunch: null };
+      pendingPrize = null;
+      messageText.textContent = "App reset.";
+      render();
+    }
+
+    pickerButtons.forEach(btn => {
+      btn.addEventListener("click", () => chooseStars(Number(btn.dataset.value)));
+    });
+
+    launchButton.addEventListener("click", launchStars);
+    undoButton.addEventListener("click", undoLastLaunch);
+    newGreetingButton.addEventListener("click", setRandomGreeting);
+
+    openJarButton.addEventListener("click", () => {
+      jarLid.classList.add("open");
+      openJarButton.classList.add("hidden");
+      setTimeout(() => scroll.classList.add("show"), 360);
+    });
+
+    closeJarButton.addEventListener("click", closePrizeJar);
+
+    subtractButton.addEventListener("click", () => {
+      state.stars = Math.max(0, state.stars - 1);
+      state.lastLaunch = null;
+      messageText.textContent = "One star removed.";
+      render();
+    });
+
+    resetButton.addEventListener("click", resetApp);
+
+    drawTwinkles();
+    setRandomGreeting();
+    render();
+  </script>
+</body>
+</html>
